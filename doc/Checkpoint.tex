@@ -1,0 +1,28 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+
+\newcommand{\codeword}[1]{\texttt{#1}}
+
+\begin{document}
+
+\title{ARM Interim Checkpoint}
+\author{Bingqi Li, Haoran Wang, Leven Zhou, Zhanrong Qiao}
+
+\maketitle
+
+\section{Group Organisation}
+
+Our group is working extremely well. We finished the emulator in just 4 days. The code is also properly formatted and commented in the end, so we expect good maintainability.
+
+The work of implementing four types of commands is evenly distributed among group members. Since the correct implementation of each type of instruction requires careful reading of the spec as well as careful coding, we cross-check each other’s work after we have finished the part of ourselves. (Members who wish to contribute more took the responsibility of writing the unit-testing code.)
+
+Though many people would recommend working on different branches to better utilise the version control features of Git, our group considered this unnecessary, as we only have 4 people and 2 tasks at hand. We just pushed incremental updates to the main branch, and pulled often to keep the divergence (between local and remote versions) small.
+
+\section{Implementation Strategies}
+
+The structures \codeword{ByteVector} and \codeword{State} are designed after OOP principles. Despite the lack of a means of encapsulation in the C language, we tried to document the access restrictions of member variables (e.g. private, readonly or read-write) in comments, and follow them anywhere in our code. We also take extra care to call constructors/destructors at the beginning/end of every object’s lifetime. \textit{(Of course, this can be automated, but doing so probably means a lot of work, and will essentially result in a stripped-down version of Cfront aka. C++...)} Initially, \codeword{ByteVector} was constructed for the purpose of storing unsigned bytes, which can be used to store the instructions of the emulator. However, during the process of developing the assembler, we realised the necessity of dynamically-sized arrays of a variety of types, including user-defined ones (e.g. currently unresolved labels). So we made use of the C preprocessor to generate a version of \codeword{Vector} for each different data type. This “generic” \codeword{Vector} container also initialises newly-created space automatically, by calling a user-defined constructor for the element type. If the user-defined type manages dynamic memory through pointers, its destructor is also called when the element is removed, or when the \codeword{Vector} itself is destructed. In this way we are able to store \codeword{Vector}s as elements of a \codeword{Vector}, with few lines of redundant code and no memory leaks.
+
+The quite challenging part of the project is to build the whole template from scratch. The implementation of our original ideas may not work in the efficient and appropriate way we thought, and we have to modify the structure from the basis to improve the functionality.  For example, during the development of assembler, the initial strategy was parsing the whole file into some data structure and then doing the assembling using information stored in that structure. But whenever we want to support a new syntax, the structure has to be modified to hold more information; being just an alternative representation of the file content, it looks redundant after some time. It turns out that we could do without it, by re-organising the process into a kind of “syntax-directed translation” (parsing the file and generating instructions at the same time). The code becomes more coherent and logical, and adapting to new syntax becomes easier. Although the whole process involves a great amount of effort and time, with the contributions of every group member, we could finally tackle this issue.
+
+\end{document}
